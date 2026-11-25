@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="t">
+<title id="t">Incondor — ícono 2</title>
+<g id="icon">
+<defs><clipPath id="sh2"><path d="M256 28L462 104V300Q462 410 256 488Q50 410 50 300V104Z"/></clipPath></defs>
+<path d="M256 28L462 104V300Q462 410 256 488Q50 410 50 300V104Z" fill="#1d252c"/>
+<g clip-path="url(#sh2)">
+<path d="M40 300L150 214L204 252L290 176L372 246L414 220L480 268V320H40Z" fill="#4a5661"/>
+<path d="M40 298H480V500H40Z" fill="#1d252c"/>
+<path d="M240 298H272L400 500H112Z" fill="#f1ede4"/>
+<path d="M252 312H260V332H252Z M250 352H262V380H250Z M247 404H265V444H247Z" fill="#f2a20c"/>
+</g>
+<path d="M256 28L462 104V300Q462 410 256 488Q50 410 50 300V104Z" fill="none" stroke="#f2a20c" stroke-width="16"/>
+<path d="M96 168Q170 118 236 150L256 136L276 150Q342 118 416 168L392 170L404 184L374 180L382 196L330 182Q296 178 270 192L256 214L242 192Q216 178 182 182L130 196L138 180L108 184L120 170Z" fill="#f2a20c"/>
+</g>
+</svg>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cóndor Incondor</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#1b232b; --amber:#f2a20c; --bone:#f1ede4; --muted:#8b99a5; --line:#2a343e; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #11171d; color: var(--bone); font: 16px/1.5 Inter, system-ui, sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding: 40px 16px 80px; }
+  h1, h2 { font-family: "Archivo Black", sans-serif; text-transform: uppercase; margin: 0; letter-spacing: .02em; }
+  h1 { font-size: clamp(32px, 5vw, 56px); }
+  h2 { font-size: clamp(22px, 3vw, 30px); margin: 56px 0 14px; }
+  .k { font: 600 12px/1 ui-monospace, monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--amber); }
+  .big { margin-top: 20px; border-radius: 14px; background: var(--bone); display: grid; place-items: center; padding: clamp(24px, 6vw, 80px); }
+  .big img { width: 100%; max-width: 980px; }
+  .row { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .card { border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: #18202a; }
+  .card svg { display: block; width: 100%; height: auto; }
+  .cap { padding: 12px 16px; font-size: 14px; color: var(--muted); border-top: 1px solid var(--line); }
+  .cap b { color: var(--bone); }
+</style>
+</head>
+<body>
+<main>
+  <div class="k">Incondor · cóndor monolítico</div>
+  <h1>Así se vería</h1>
+
+  <h2>En grande</h2>
+  <div class="big"><img src="iterations/iteration-6.svg" alt="Logo Incondor cóndor"></div>
+
+  <h2>En camisa</h2>
+  <div class="row">
+    <!-- Polo frente: logo pequeño en el pecho -->
+    <div class="card"><svg viewBox="0 0 500 560" aria-label="Polo frente">
+      <rect width="500" height="560" fill="#d9d4c8"/>
+      <path d="M150 52L205 38Q250 70 295 38L350 52L470 120L430 222L380 196V530Q250 548 120 530V196L70 222L30 120Z" fill="#1b232b"/>
+      <path d="M70 222L30 120L56 106L94 210Z M430 222L470 120L444 106L406 210Z" fill="#141b21"/>
+      <path d="M205 38Q250 92 295 38L284 30Q250 64 216 30Z" fill="#232d36"/>
+      <path d="M241 66H259V160H241Z" fill="#232d36"/><circle cx="250" cy="96" r="4" fill="#f1ede4"/><circle cx="250" cy="130" r="4" fill="#f1ede4"/>
+      <image href="iterations/condor-icon-oscuro.svg" x="292" y="112" width="74" height="74"/>
+      <path d="M120 520Q250 538 380 520" stroke="#141b21" stroke-width="6" fill="none"/>
+    </svg><div class="cap"><b>Polo · frente</b> · cóndor bordado en el pecho</div></div>
+
+    <!-- Polo espalda: logo grande -->
+    <div class="card"><svg viewBox="0 0 500 560" aria-label="Polo espalda">
+      <rect width="500" height="560" fill="#d9d4c8"/>
+      <path d="M150 52L205 38Q250 54 295 38L350 52L470 120L430 222L380 196V530Q250 548 120 530V196L70 222L30 120Z" fill="#1b232b"/>
+      <path d="M70 222L30 120L56 106L94 210Z M430 222L470 120L444 106L406 210Z" fill="#141b21"/>
+      <path d="M205 38Q250 54 295 38L290 30Q250 44 210 30Z" fill="#232d36"/>
+      <image href="iterations/condor-vertical-oscuro.svg" x="150" y="110" width="200" height="250"/>
+    </svg><div class="cap"><b>Polo · espalda</b> · logo completo en grande</div></div>
+
+    <!-- Camisa clara de oficina -->
+    <div class="card"><svg viewBox="0 0 500 560" aria-label="Camisa clara">
+      <rect width="500" height="560" fill="#2a343e"/>
+      <path d="M150 52L205 38Q250 70 295 38L350 52L470 120L430 222L380 196V530Q250 548 120 530V196L70 222L30 120Z" fill="#f4f2ec"/>
+      <path d="M70 222L30 120L56 106L94 210Z M430 222L470 120L444 106L406 210Z" fill="#e4e0d6"/>
+      <path d="M205 38L250 110L295 38L284 30L250 80L216 30Z" fill="#e4e0d6"/>
+      <path d="M246 110V520" stroke="#dcd7cc" stroke-width="3"/>
+      <g fill="#c9c3b6"><circle cx="250" cy="150" r="4"/><circle cx="250" cy="220" r="4"/><circle cx="250" cy="290" r="4"/><circle cx="250" cy="360" r="4"/></g>
+      <image href="iterations/iteration-6-icon.svg" x="290" y="120" width="76" height="76"/>
+    </svg><div class="cap"><b>Camisa de oficina</b> · cóndor en el bolsillo</div></div>
+  </div>
+
+  <h2>En casco de obra</h2>
+  <div class="row">
+    <!-- Casco blanco -->
+    <div class="card"><svg viewBox="0 0 500 380" aria-label="Casco blanco">
+      <defs><radialGradient id="dw" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset=".7" stop-color="#e9e6df"/><stop offset="1" stop-color="#c9c4b8"/></radialGradient></defs>
+      <rect width="500" height="380" fill="#3a4550"/>
+      <ellipse cx="250" cy="300" rx="210" ry="30" fill="#c9c4b8"/>
+      <path d="M76 292Q70 80 250 66Q430 80 424 292Z" fill="url(#dw)"/>
+      <path d="M178 84Q160 180 168 292M322 84Q340 180 332 292" stroke="#d6d1c6" stroke-width="10" fill="none"/>
+      <ellipse cx="250" cy="292" rx="174" ry="12" fill="#d6d1c6"/>
+      <image href="iterations/iteration-6-icon.svg" x="186" y="130" width="128" height="128"/>
+    </svg><div class="cap"><b>Casco blanco</b> · ingenieros y supervisores</div></div>
+
+    <!-- Casco ámbar -->
+    <div class="card"><svg viewBox="0 0 500 380" aria-label="Casco ámbar">
+      <defs><radialGradient id="da" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#ffc54d"/><stop offset=".7" stop-color="#f2a20c"/><stop offset="1" stop-color="#c47f00"/></radialGradient></defs>
+      <rect width="500" height="380" fill="#3a4550"/>
+      <ellipse cx="250" cy="300" rx="210" ry="30" fill="#c47f00"/>
+      <path d="M76 292Q70 80 250 66Q430 80 424 292Z" fill="url(#da)"/>
+      <path d="M178 84Q160 180 168 292M322 84Q340 180 332 292" stroke="#e09400" stroke-width="10" fill="none"/>
+      <ellipse cx="250" cy="292" rx="174" ry="12" fill="#e09400"/>
+      <image href="iterations/condor-icon-tinta.svg" x="186" y="130" width="128" height="128"/>
+    </svg><div class="cap"><b>Casco ámbar</b> · conductores y operarios, cóndor a una tinta</div></div>
+  </div>
+</main>
+</body>
+</html>

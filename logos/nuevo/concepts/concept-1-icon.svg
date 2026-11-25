@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="t">
+<title id="t">Incondor — ícono 1</title>
+<g id="icon">
+<g fill="#f2a20c"><path d="M178 186L36 140L50 178L178 212Z M178 224L58 198L70 232L178 250Z M178 262L84 252L94 282L178 288Z"/><g transform="translate(512 0) scale(-1 1)"><path d="M178 186L36 140L50 178L178 212Z M178 224L58 198L70 232L178 250Z M178 262L84 252L94 282L178 288Z"/></g></g>
+<path d="M226 404H286L372 486H140Z" fill="#1d252c"/>
+<path d="M251 414H261V432H251Z M249 446H263V468H249Z" fill="#f2a20c"/>
+<rect x="170" y="370" width="36" height="46" rx="6" fill="#1d252c"/><rect x="306" y="370" width="36" height="46" rx="6" fill="#1d252c"/>
+<path d="M196 126H316Q336 126 336 146V368H176V146Q176 126 196 126Z" fill="#1d252c"/>
+<path d="M196 148H250V226H196Z M262 148H316V226H262Z" fill="#f1ede4"/>
+<path d="M204 252H308V330H204Z" fill="#f2a20c"/>
+<path d="M204 266H308M204 284H308M204 302H308M204 320H308" stroke="#1d252c" stroke-width="8"/>
+<rect x="184" y="296" width="14" height="30" rx="3" fill="#f1ede4"/><rect x="314" y="296" width="14" height="30" rx="3" fill="#f1ede4"/>
+<path d="M160 340H352V374H160Z" fill="#1d252c"/>
+<path d="M232 104H280L290 126H222Z" fill="#f2a20c"/>
+</g>
+</svg>

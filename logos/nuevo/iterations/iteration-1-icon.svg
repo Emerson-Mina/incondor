@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="t">
+<title id="t">Incondor</title>
+<g id="icon">
+<path d="M48 170H310L292 330H82Z" fill="#f2a20c"/>
+<path d="M326 330V214Q326 200 340 200H408L456 268V330Z" fill="#1d252c"/>
+<g fill="#1d252c"><circle cx="124" cy="372" r="38"/><circle cx="214" cy="372" r="38"/><circle cx="404" cy="372" r="38"/></g>
+</g>
+</svg>

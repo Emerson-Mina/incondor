@@ -1,0 +1,29 @@
+{
+  "name": "flota-incondor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sitio de Incondor S.A.S con visor 3D de la flota de transporte de carga.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "npx --yes serve@14.2.4 out",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.6",
+    "@react-three/fiber": "^9.4.0",
+    "@react-three/postprocessing": "^3.0.4",
+    "next": "^16.4.6",
+    "postprocessing": "^6.37.8",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.12",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@types/three": "^0.180.0",
+    "typescript": "^5.9.3"
+  }
+}

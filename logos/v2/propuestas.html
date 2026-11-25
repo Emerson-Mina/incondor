@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logo Incondor v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;1,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg0:#090c0f; --bg1:#0f1418; --bg2:#131a20; --fg:#e8edf1; --muted:#8b99a5; --cu:#d98d2f; --line:#222c35; --paper:#f4f4f2; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg0); color: var(--fg); font: 16px/1.55 Inter, system-ui, sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding: 48px 16px 80px; }
+  h1, h2, h3 { font-family: "Barlow Condensed", sans-serif; font-style: italic; font-weight: 800; text-transform: uppercase; margin: 0; line-height: .95; }
+  h1 { font-size: clamp(44px, 7vw, 84px); }
+  h2 { font-size: clamp(30px, 4vw, 46px); margin: 64px 0 8px; }
+  h3 { font-size: 26px; }
+  .k { font: 600 12px/1 ui-monospace, monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--cu); }
+  .lead { color: var(--muted); max-width: 760px; font-size: 18px; }
+  .muted { color: var(--muted); }
+  .row { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-top: 18px; }
+  .card { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--bg1); }
+  .stage { display: grid; place-items: center; padding: 28px; min-height: 200px; }
+  .stage.light { background: var(--paper); } .stage.dark { background: var(--bg2); }
+  .stage img { max-width: 100%; max-height: 170px; }
+  .cap { padding: 12px 16px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  .cap b { color: var(--fg); }
+  .before { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; padding: 18px; border: 1px dashed var(--line); border-radius: 12px; margin-top: 22px; }
+  .before img { height: 60px; max-width: 100%; background: #fff; padding: 8px 12px; border-radius: 8px; }
+  .hero { position: relative; border-radius: 12px; overflow: hidden; margin-top: 18px; min-height: 340px; background: #111 center/cover; }
+  .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,12,15,.85), rgba(9,12,15,.2) 45%, rgba(9,12,15,.85)); }
+  .hero nav { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; gap: 16px; }
+  .hero nav img { height: 54px; max-width: 60%; }
+  .hero nav span { font: 600 13px/1 Inter; letter-spacing: .08em; text-transform: uppercase; color: var(--fg); opacity: .85; }
+  .hero h3 { position: absolute; z-index: 1; left: 24px; bottom: 24px; font-size: clamp(34px, 5vw, 60px); max-width: 640px; }
+  .fav { display: flex; gap: 14px; align-items: end; flex-wrap: wrap; padding: 18px; background: var(--paper); color: #333; font-size: 12px; }
+  .fav div { display: flex; gap: 8px; align-items: end; margin-right: 22px; }
+  .verdict { margin-top: 28px; padding: 24px; border-radius: 12px; background: linear-gradient(135deg, rgba(217,141,47,.18), rgba(217,141,47,.03)); border: 1px solid rgba(217,141,47,.45); }
+  .verdict h3 { font-size: 34px; margin: 6px 0 10px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="k">Incondor S.A.S · propuesta v2</div>
+  <h1>El mismo IC,<br>más fuerte</h1>
+  <p class="lead">Esta versión parte de la marca que ya tiene Incondor en incondor.com: el monograma IC en cobre, las letras negras en itálica y el lema “La solución al transporte de manera concreta”. Redibujé el IC original en vector limpio, sin el contorno blanco ni la sombra pixelada. Para el nombre usé una tipografía itálica pesada que transmite movimiento y carga.</p>
+
+  <div class="before"><div><div class="k">Antes</div><span class="muted">Logo actual en incondor.com</span></div><img src="../../INFO_FRANK/LOGO INCONDOR SAS TRANSPARENTE.png" alt="Logo actual de Incondor"></div>
+
+  <h2>V1 · IC limpio</h2>
+  <p class="muted">El IC original en degradado cobre, plano y sin efectos. Es el más versátil.</p>
+  <div class="row">
+    <div class="card"><div class="stage light"><img src="v1-ic-limpio/horizontal-claro.svg" alt="V1 fondo claro"></div><div class="cap"><b>Fondo claro</b> · papelería, PDF, facturas</div></div>
+    <div class="card"><div class="stage dark"><img src="v1-ic-limpio/horizontal-oscuro.svg" alt="V1 fondo oscuro"></div><div class="cap"><b>Fondo oscuro</b> · web nueva, redes</div></div>
+  </div>
+
+  <h2>V2 · IC con relieve</h2>
+  <p class="muted">Conserva la sombra negra del logo actual, pero desplazada y nítida. Es el más fiel al original.</p>
+  <div class="row">
+    <div class="card"><div class="stage light"><img src="v2-ic-relieve/horizontal-claro.svg" alt="V2 fondo claro"></div><div class="cap"><b>Fondo claro</b></div></div>
+    <div class="card"><div class="stage dark"><img src="v2-ic-relieve/horizontal-oscuro.svg" alt="V2 fondo oscuro"></div><div class="cap"><b>Fondo oscuro</b></div></div>
+  </div>
+
+  <h2>V3 · Placa de flota</h2>
+  <p class="muted">El IC en blanco dentro de una placa cobre con esquinas recortadas, como una placa de vehículo. Sirve para las puertas de las volquetas, la foto de perfil y el ícono de la app.</p>
+  <div class="row">
+    <div class="card"><div class="stage light"><img src="v3-placa-flota/horizontal-claro.svg" alt="V3 fondo claro"></div><div class="cap"><b>Horizontal</b></div></div>
+    <div class="card"><div class="stage dark"><img src="v3-placa-flota/vertical-oscuro.svg" alt="V3 vertical"></div><div class="cap"><b>Vertical</b> · puertas, redes</div></div>
+    <div class="card"><div class="stage light"><img src="v3-placa-flota/icono.svg" alt="V3 icono"></div><div class="cap"><b>Ícono</b> · perfil de WhatsApp e Instagram</div></div>
+  </div>
+
+  <h2>Así se ve en la web</h2>
+  <div class="hero" style="background-image:url('../../public/img/hero-volqueta.webp')">
+    <nav><img src="v1-ic-limpio/horizontal-oscuro.svg" alt="Incondor"><span>Servicios · Flota · Contacto</span></nav>
+    <h3>La solución al transporte de manera concreta</h3>
+  </div>
+
+  <h2>Favicon</h2>
+  <div class="card"><div class="fav">
+    <div><img src="v1-ic-limpio/png/icono-16.png" width="16" alt=""><img src="v1-ic-limpio/png/icono-32.png" width="32" alt=""><img src="v1-ic-limpio/png/icono-48.png" width="48" alt="">&nbsp;V1</div>
+    <div><img src="v2-ic-relieve/png/icono-16.png" width="16" alt=""><img src="v2-ic-relieve/png/icono-32.png" width="32" alt=""><img src="v2-ic-relieve/png/icono-48.png" width="48" alt="">&nbsp;V2</div>
+    <div><img src="v3-placa-flota/png/icono-16.png" width="16" alt=""><img src="v3-placa-flota/png/icono-32.png" width="32" alt=""><img src="v3-placa-flota/png/icono-48.png" width="48" alt="">&nbsp;V3</div>
+  </div></div>
+
+  <div class="verdict">
+    <div class="k">Recomendación</div>
+    <h3>V1 como logo principal + V3 para la flota</h3>
+    <p>V1 mantiene el IC que los clientes ya reconocen y se ve moderno, tanto en la web oscura como en papelería blanca. V3 sirve para lo que tiene que leerse de lejos o en tamaño pequeño: puertas de volquetas, favicon y perfil de redes. Es la misma marca en dos formatos.</p>
+    <p class="muted">V2 es la opción si la gerencia quiere el cambio mínimo frente al logo actual.</p>
+  </div>
+</main>
+</body>
+</html>

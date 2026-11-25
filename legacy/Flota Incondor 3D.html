@@ -1,0 +1,939 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Flota Incondor 3D</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+  /* Layout: ficha técnica + selector de flota arriba, visor 3D a sangre en el centro, controles abajo. */
+  :root {
+    --bg: #dde4e9;
+    --bg2: #c3cdd5;
+    --panel: #f6f8f9;
+    --fg: #14202a;
+    --muted: #55656f;
+    --line: #b7c3cc;
+    --accent: #d9480f;
+    --accent-fg: #ffffff;
+    --font-display: "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+    --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1a2229; --bg2: #0d1216; --panel: #1b242b; --fg: #e8eef2;
+      --muted: #8fa1ae; --line: #2f3d47; --accent: #ff7a3d; --accent-fg: #1a0d05;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1a2229; --bg2: #0d1216; --panel: #1b242b; --fg: #e8eef2;
+    --muted: #8fa1ae; --line: #2f3d47; --accent: #ff7a3d; --accent-fg: #1a0d05;
+    color-scheme: dark;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 14px; line-height: 1.45; }
+  [hidden] { display: none !important; }
+  .app { min-height: 100%; display: grid; grid-template-rows: auto auto minmax(340px, 1fr) auto; }
+  .pad { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+  .top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 24px; padding-block: 16px 10px; }
+  .top > div { min-width: 0; }
+  .kicker { margin: 0 0 4px; font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+  h1 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: clamp(30px, 6vw, 44px); line-height: 1; letter-spacing: .02em; text-transform: uppercase; text-wrap: balance; }
+  .sub { margin: 4px 0 0; color: var(--muted); }
+  .specs { display: flex; gap: 6px 22px; margin: 0; flex-wrap: wrap; }
+  .specs div { display: flex; flex-direction: column; }
+  .specs dt { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .specs dd { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 22px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+
+  .fleet { display: flex; flex-wrap: wrap; gap: 6px; padding-block: 2px 12px; }
+  .fleet button { font-weight: 500; }
+
+  .stage { position: relative; min-height: 340px; background: radial-gradient(ellipse at 50% 38%, var(--bg) 0%, var(--bg2) 100%); overflow: hidden; }
+  #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+  #gl:active { cursor: grabbing; }
+  .hint { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); right: 16px; bottom: 10px; margin: 0; font-size: 12px; color: var(--muted); pointer-events: none; }
+  #nogl { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 14px 28px; padding-block: 14px 16px; border-top: 1px solid var(--line); background: var(--panel); }
+  .group { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .group > .label { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  button { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button[aria-pressed="true"], button.on { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .swatch { width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 2px solid var(--line); }
+  .swatch[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--accent); background-clip: padding-box; }
+  input[type="range"] { width: 150px; accent-color: var(--accent); }
+  #liftOut { min-width: 34px; font-variant-numeric: tabular-nums; color: var(--muted); }
+  @media (max-width: 520px) { input[type="range"] { width: 110px; } .stage { min-height: 380px; } }
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="top pad">
+    <div>
+      <p class="kicker">Incondor S.A.S · Flota en 3D</p>
+      <h1 id="vName">Volqueta doble troque</h1>
+      <p class="sub" id="vService">Transporte de materiales agregados y mezcla asfáltica.</p>
+    </div>
+    <dl class="specs">
+      <div><dt>Config.</dt><dd id="sConf">C3</dd></div>
+      <div><dt>Ejes</dt><dd id="sAxles">3</dd></div>
+      <div><dt>Largo</dt><dd id="sLen">–</dd></div>
+      <div><dt>Ancho</dt><dd id="sWid">–</dd></div>
+      <div><dt>Alto</dt><dd id="sHei">–</dd></div>
+      <div><dt>Capacidad</dt><dd id="sCap">–</dd></div>
+    </dl>
+  </header>
+
+  <nav class="fleet pad" id="fleet" aria-label="Vehículos de la flota"></nav>
+
+  <section class="stage" id="stage" aria-label="Visor 3D del vehículo">
+    <canvas id="gl"></canvas>
+    <p class="hint">Arrastra para girar · rueda o pellizco para acercar · medidas y capacidades de referencia</p>
+    <p id="nogl" hidden>Tu navegador no pudo iniciar el visor 3D (WebGL). Prueba con otro navegador o activa la aceleración por hardware.</p>
+  </section>
+
+  <section class="controls pad" aria-label="Controles del visor">
+    <div class="group">
+      <span class="label">Vista</span>
+      <div class="row" id="views">
+        <button type="button" data-view="iso">Tres cuartos</button>
+        <button type="button" data-view="front">Frente</button>
+        <button type="button" data-view="side">Lateral</button>
+        <button type="button" data-view="rear">Trasera</button>
+        <button type="button" data-view="top">Arriba</button>
+      </div>
+    </div>
+    <div class="group">
+      <span class="label">Pintura cabina</span>
+      <div class="row" id="paints"></div>
+    </div>
+    <div class="group" id="liftGroup">
+      <span class="label">Volco</span>
+      <div class="row">
+        <input type="range" id="lift" min="0" max="100" value="0" aria-label="Ángulo del volco">
+        <output id="liftOut" for="lift">0°</output>
+        <button type="button" id="liftBtn">Volcar</button>
+      </div>
+    </div>
+    <div class="group" id="cargoGroup" hidden>
+      <span class="label">Carga</span>
+      <div class="row">
+        <button type="button" id="cargoA" aria-pressed="true">A</button>
+        <button type="button" id="cargoB" aria-pressed="false">B</button>
+      </div>
+    </div>
+    <div class="group">
+      <span class="label">Giro</span>
+      <div class="row"><button type="button" id="spin" aria-pressed="true">Automático</button></div>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function () {
+  var T = window.THREE;
+  var stage = document.getElementById('stage');
+  var canvas = document.getElementById('gl');
+  var renderer;
+  try {
+    renderer = new T.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+  } catch (e) {
+    document.getElementById('nogl').hidden = false;
+    return;
+  }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = T.sRGBEncoding;
+  renderer.toneMapping = T.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = T.PCFSoftShadowMap;
+
+  var scene = new T.Scene();
+  var camera = new T.PerspectiveCamera(32, 1, 0.1, 200);
+  camera.position.set(9.5, 4.6, 10);
+  var PI = Math.PI;
+
+  /* ---------- Reflejos: entorno de estudio generado en código ---------- */
+  (function makeEnv() {
+    var envScene = new T.Scene();
+    var g = new T.SphereGeometry(20, 32, 16);
+    var pos = g.attributes.position, cols = [];
+    var c0 = new T.Color(0x59636b), c1 = new T.Color(0xdde4e8), c2 = new T.Color(0xf8fbff), c = new T.Color();
+    for (var i = 0; i < pos.count; i++) {
+      var t = (pos.getY(i) / 20 + 1) / 2;
+      if (t < 0.5) c.lerpColors(c0, c1, t * 2); else c.lerpColors(c1, c2, (t - 0.5) * 2);
+      cols.push(c.r, c.g, c.b);
+    }
+    g.setAttribute('color', new T.Float32BufferAttribute(cols, 3));
+    envScene.add(new T.Mesh(g, new T.MeshBasicMaterial({ vertexColors: true, side: T.BackSide })));
+    var pm = new T.MeshBasicMaterial({ color: new T.Color(1, 1, 1).multiplyScalar(5), side: T.DoubleSide });
+    var top = new T.Mesh(new T.PlaneGeometry(16, 6), pm); top.position.set(0, 16, 0); top.rotation.x = PI / 2; envScene.add(top);
+    var s1 = new T.Mesh(new T.PlaneGeometry(3, 12), pm); s1.position.set(17, 6, 0); s1.rotation.y = PI / 2; envScene.add(s1);
+    var s2 = new T.Mesh(new T.PlaneGeometry(3, 12), pm); s2.position.set(-17, 6, 0); s2.rotation.y = PI / 2; envScene.add(s2);
+    var s3 = new T.Mesh(new T.PlaneGeometry(12, 3), pm); s3.position.set(0, 6, 17); envScene.add(s3);
+    var gen = new T.PMREMGenerator(renderer);
+    scene.environment = gen.fromScene(envScene, 0.04).texture;
+    gen.dispose();
+  })();
+
+  scene.add(new T.HemisphereLight(0xffffff, 0x8a96a0, 0.25));
+  var sun = new T.DirectionalLight(0xffffff, 1.0);
+  sun.position.set(6, 11, 7);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.camera.left = -12; sun.shadow.camera.right = 12;
+  sun.shadow.camera.top = 12; sun.shadow.camera.bottom = -12;
+  sun.shadow.camera.near = 1; sun.shadow.camera.far = 40;
+  sun.shadow.bias = -0.0004;
+  scene.add(sun);
+
+  /* ---------- Suelo: sombra proyectada + sombra de contacto ---------- */
+  var floor = new T.Mesh(new T.PlaneGeometry(80, 80), new T.ShadowMaterial({ opacity: 0.22 }));
+  floor.rotation.x = -PI / 2; floor.receiveShadow = true; scene.add(floor);
+  var blob = (function () {
+    var cv = document.createElement('canvas'); cv.width = cv.height = 256;
+    var cx = cv.getContext('2d');
+    var gr = cx.createRadialGradient(128, 128, 10, 128, 128, 128);
+    gr.addColorStop(0, 'rgba(0,0,0,0.55)'); gr.addColorStop(0.6, 'rgba(0,0,0,0.18)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    cx.fillStyle = gr; cx.fillRect(0, 0, 256, 256);
+    var b = new T.Mesh(new T.PlaneGeometry(1, 1),
+      new T.MeshBasicMaterial({ map: new T.CanvasTexture(cv), transparent: true, depthWrite: false }));
+    b.rotation.x = -PI / 2; b.position.y = 0.006; scene.add(b);
+    return b;
+  })();
+
+  /* ---------- Materiales (compartidos entre vehículos) ---------- */
+  function std(color, rough, metal) { return new T.MeshStandardMaterial({ color: color, roughness: rough, metalness: metal }); }
+  var paint = std(0xf1f2f0, 0.38, 0.15); paint.side = T.DoubleSide;
+  var liner = std(0xaaaeae, 0.55, 0.2); liner.side = T.DoubleSide;
+  var black = std(0x15181b, 0.6, 0.2);
+  var dark = std(0x2b3036, 0.5, 0.3);
+  var steel = std(0x3a4148, 0.55, 0.5);
+  var rubber = std(0x101214, 0.92, 0.0);
+  var chrome = std(0xdfe3e6, 0.18, 1.0);
+  var rimMat = std(0xc4c9ce, 0.3, 0.9);
+  var glass = std(0x1c3040, 0.08, 0.7);
+  var glassSide = std(0x6f93a8, 0.1, 0.6);
+  var inox = std(0xd3d8dc, 0.24, 1.0); inox.side = T.DoubleSide;
+  var wood = std(0x6b4f36, 0.85, 0.0);
+  var tarpMat = std(0x16191c, 0.5, 0.05);
+  var strapMat = std(0x343a40, 0.7, 0.1);
+  var yellow = std(0xf2b705, 0.45, 0.2);
+  var tipBody = std(0x8a9299, 0.5, 0.45); tipBody.side = T.DoubleSide;
+  var tipLiner = std(0x5d646b, 0.6, 0.4); tipLiner.side = T.DoubleSide;
+  var bagMat = std(0xf3f3ef, 0.9, 0.0);
+  var bandMat = std(0x3f8f3a, 0.8, 0.0);
+  var tireMat = new T.MeshStandardMaterial({ color: 0x111315, roughness: 0.9, metalness: 0, side: T.DoubleSide });
+  var lampW = new T.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2c4, emissiveIntensity: 0.7, roughness: 0.2 });
+  var lampR = new T.MeshStandardMaterial({ color: 0xc92a2a, emissive: 0xff2a1a, emissiveIntensity: 0.5, roughness: 0.3 });
+  var lampA = new T.MeshStandardMaterial({ color: 0xf59f00, emissive: 0xff9a00, emissiveIntensity: 0.5, roughness: 0.3 });
+
+  function setPaint(hex) {
+    paint.color.set(hex);
+    liner.color.set(hex).multiplyScalar(0.72);
+  }
+
+  /* ---------- Ayudas de construcción ---------- */
+  var KEEP = new Set();                                             // geometrías compartidas: no se liberan al cambiar de vehículo
+  function add(parent, geo, mat, x, y, z, noShadow) {
+    var m = new T.Mesh(geo, mat);
+    m.position.set(x || 0, y || 0, z || 0);
+    m.castShadow = !noShadow; m.receiveShadow = true;
+    parent.add(m); return m;
+  }
+  function box(p, w, h, d, mat, x, y, z) { return add(p, new T.BoxGeometry(w, h, d), mat, x, y, z); }
+  function cyl(p, rt, rb, h, seg, mat, x, y, z, axis) {
+    var g = new T.CylinderGeometry(rt, rb, h, seg);
+    if (axis === 'z') g.rotateX(PI / 2);
+    if (axis === 'x') g.rotateZ(PI / 2);
+    return add(p, g, mat, x, y, z);
+  }
+  // Viga recta entre dos puntos del plano lateral (x, y), a la altura lateral z.
+  function beam(p, ax, ay, bx, by, t, w, z, mat, ext) {
+    var dx = bx - ax, dy = by - ay, L = Math.sqrt(dx * dx + dy * dy) + (ext || 0);
+    var m = box(p, L, t, w, mat, (ax + bx) / 2, (ay + by) / 2, z);
+    m.rotation.z = Math.atan2(dy, dx); return m;
+  }
+  function mergeGeos(list) {
+    var pos = [], nor = [];
+    list.forEach(function (g) {
+      var n = g.index ? g.toNonIndexed() : g;
+      Array.prototype.push.apply(pos, n.attributes.position.array);
+      Array.prototype.push.apply(nor, n.attributes.normal.array);
+    });
+    var out = new T.BufferGeometry();
+    out.setAttribute('position', new T.Float32BufferAttribute(pos, 3));
+    out.setAttribute('normal', new T.Float32BufferAttribute(nor, 3));
+    return out;
+  }
+  function keep(g) { KEEP.add(g); return g; }
+
+  /* ---------- Ruedas (geometría compartida, tacos y pernos fusionados) ---------- */
+  var WG = (function () {
+    var prof = [[0.29, -0.15], [0.4, -0.16], [0.47, -0.14], [0.5, -0.1], [0.505, 0], [0.5, 0.1], [0.47, 0.14], [0.4, 0.16], [0.29, 0.15]]
+      .map(function (p) { return new T.Vector2(p[0], p[1]); });
+    var tg = new T.LatheGeometry(prof, 40); tg.rotateX(PI / 2);
+    var lugs = [];
+    for (var k = 0; k < 24; k++) {
+      var a = k / 24 * PI * 2, b = new T.BoxGeometry(0.05, 0.03, 0.3);
+      b.rotateZ(a); b.translate(Math.cos(a) * 0.505, Math.sin(a) * 0.505, 0); lugs.push(b);
+    }
+    var bolts = [];
+    [-1, 1].forEach(function (s) {
+      for (var n = 0; n < 8; n++) {
+        var an = n / 8 * PI * 2, c = new T.CylinderGeometry(0.022, 0.022, 0.04, 6);
+        c.rotateX(PI / 2); c.translate(Math.cos(an) * 0.17, Math.sin(an) * 0.17, s * 0.15); bolts.push(c);
+      }
+    });
+    function cz(r, h, seg) { var g = new T.CylinderGeometry(r, r, h, seg); g.rotateX(PI / 2); return g; }
+    return {
+      tire: keep(tg), lugs: keep(mergeGeos(lugs)), bolts: keep(mergeGeos(bolts)),
+      rim: keep(cz(0.3, 0.27, 32)), hub: keep(cz(0.24, 0.29, 32)), cap: keep(cz(0.11, 0.31, 20))
+    };
+  })();
+  var buildWheels = [];
+  function makeWheel() {
+    var g = new T.Group();
+    add(g, WG.tire, tireMat);
+    add(g, WG.lugs, rubber, 0, 0, 0, true);
+    add(g, WG.rim, rimMat);
+    add(g, WG.hub, dark, 0, 0, 0, true);
+    add(g, WG.cap, chrome, 0, 0, 0, true);
+    add(g, WG.bolts, chrome, 0, 0, 0, true);
+    return g;
+  }
+  function addWheel(p, x, z, r) {
+    var w = makeWheel(); w.scale.setScalar(r / 0.5); w.position.set(x, r, z);
+    w.userData.r = r; p.add(w); buildWheels.push(w);
+  }
+  function axle(p, x, dual, r, drive) {
+    r = r || 0.5;
+    cyl(p, 0.08, 0.08, 2.2, 14, black, x, r, 0, 'z');
+    [-1, 1].forEach(function (s) {
+      box(p, 0.95, 0.05, 0.12, dark, x, r + 0.16, s * 0.5);
+      if (dual) { addWheel(p, x, s * 0.75, r); addWheel(p, x, s * 1.09, r); }
+      else addWheel(p, x, s * 1.0, r);
+    });
+    if (drive) add(p, new T.SphereGeometry(0.2, 20, 14), black, x, r, 0);
+  }
+  var fenderGeo = (function () {
+    var g = new T.CylinderGeometry(0.6, 0.6, 0.42, 28, 1, true, PI / 2, PI); g.rotateX(PI / 2); return keep(g);
+  })();
+  function fenderArch(p, x) { [-1, 1].forEach(function (s) { add(p, fenderGeo, paint, x, 0.5, s * 1.0); }); }
+
+  /* ---------- Chasis, trasera, letreros ---------- */
+  function rails(p, x0, x1, y) {
+    [-1, 1].forEach(function (s) { box(p, x1 - x0, 0.26, 0.14, black, (x0 + x1) / 2, y, s * 0.45); });
+    for (var xi = x0 + 0.4; xi <= x1 - 0.4; xi += 1.2) box(p, 0.1, 0.2, 0.9, black, xi, y - 0.02, 0);
+  }
+  function rearEnd(p, rx, mudX, yo) {
+    box(p, 0.1, 0.4, 2.2, dark, rx + 0.02, 1.0 + yo, 0);              // travesaño trasero
+    [-1, 1].forEach(function (s) {
+      box(p, 0.04, 0.16, 0.28, s < 0 ? lampA : lampR, rx - 0.03, 1.0 + yo, s * 0.95);
+      box(p, 0.04, 0.12, 0.2, lampW, rx - 0.03, 0.82 + yo, s * 0.95);
+      box(p, 0.04, 0.5, 0.5, rubber, mudX, 0.45, s * 1.1);         // guardafangos de lodo
+      box(p, 0.06, 0.06, 0.5, dark, mudX, 0.72, s * 1.1);
+      var sh = 1.0 + yo - 0.62;
+      box(p, 0.1, sh, 0.07, dark, rx - 0.1, 0.62 + sh / 2, s * 0.8); // soporte parachoques
+    });
+    box(p, 0.1, 0.14, 2.1, chrome, rx - 0.15, 0.62, 0);             // defensa trasera
+  }
+  function sign(p, text, w, h, x, y, z, rotY) {
+    var cv = document.createElement('canvas'); cv.width = 1024; cv.height = Math.round(1024 * h / w);
+    var c = cv.getContext('2d');
+    c.fillStyle = '#f5c400'; c.fillRect(0, 0, cv.width, cv.height);
+    c.lineWidth = 14; c.strokeStyle = '#111'; c.strokeRect(7, 7, cv.width - 14, cv.height - 14);
+    c.fillStyle = '#111'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.font = 'bold ' + Math.round(cv.height * 0.56) + 'px "Arial Narrow", Arial, sans-serif';
+    c.fillText(text, cv.width / 2, cv.height / 2 + 4, cv.width - 60);
+    var tex = new T.CanvasTexture(cv); tex.encoding = T.sRGBEncoding; tex.anisotropy = 4;
+    var m = add(p, new T.PlaneGeometry(w, h), new T.MeshStandardMaterial({ map: tex, roughness: 0.6 }), x, y, z, true);
+    m.rotation.y = rotY; m.userData.ownMat = true; return m;
+  }
+
+  /* ---------- Cabina frontal plana (volquetas) ---------- */
+  function cabCOE(p) {
+    var sh = new T.Shape();
+    sh.moveTo(1.85, 1.3); sh.lineTo(3.7, 1.3); sh.lineTo(3.7, 2.25); sh.lineTo(3.45, 3.1); sh.lineTo(3.3, 3.3); sh.lineTo(1.85, 3.3); sh.closePath();
+    var geo = new T.ExtrudeGeometry(sh, { depth: 2.2, bevelEnabled: true, bevelThickness: 0.08, bevelSize: 0.05, bevelSegments: 4, curveSegments: 1 });
+    geo.translate(0, 0, -1.1);
+    add(p, geo, paint);
+
+    var ang = Math.atan2(0.25, 0.85);
+    box(p, 0.025, 0.8, 2.12, black, 3.622, 2.69, 0).rotation.z = ang;
+    box(p, 0.03, 0.72, 2.0, glass, 3.632, 2.69, 0).rotation.z = ang;
+
+    [-1, 1].forEach(function (s) {
+      box(p, 1.0, 0.68, 0.02, black, 2.95, 2.7, s * 1.183);
+      box(p, 0.95, 0.62, 0.03, glassSide, 2.95, 2.7, s * 1.186);
+      box(p, 0.012, 1.68, 0.012, dark, 2.1, 2.36, s * 1.184);
+      box(p, 1.42, 0.012, 0.012, dark, 2.81, 1.52, s * 1.184);
+      box(p, 0.14, 0.04, 0.05, dark, 2.3, 2.2, s * 1.2);
+      box(p, 0.05, 0.05, 0.22, dark, 3.38, 2.78, s * 1.28);
+      box(p, 0.09, 0.52, 0.16, black, 3.4, 2.58, s * 1.42);
+      box(p, 0.02, 0.46, 0.13, glassSide, 3.455, 2.58, s * 1.42);
+      box(p, 0.55, 0.05, 0.3, steel, 2.1, 0.92, s * 1.05);
+      box(p, 0.04, 0.4, 0.04, steel, 1.9, 1.12, s * 1.1);
+      box(p, 0.05, 0.17, 0.3, lampW, 3.8, 1.6, s * 0.88);
+      box(p, 0.04, 0.08, 0.16, lampA, 3.8, 1.35, s * 1.08);
+    });
+    box(p, 0.05, 0.78, 1.7, black, 3.77, 1.75, 0);
+    for (var r = 0; r < 5; r++) box(p, 0.03, 0.05, 1.62, dark, 3.8, 1.5 + r * 0.14, 0);
+    box(p, 0.22, 0.34, 2.3, dark, 3.82, 1.12, 0);
+    box(p, 0.06, 0.06, 0.9, chrome, 3.94, 1.12, 0);
+    [-0.45, 0, 0.45].forEach(function (z) { box(p, 0.1, 0.07, 0.2, lampA, 3.36, 3.38, z); });
+    cyl(p, 0.055, 0.055, 2.2, 14, chrome, 1.72, 2.45, 1.0, 'y');
+    box(p, 0.06, 0.1, 0.18, dark, 1.74, 1.5, 1.0);
+    box(p, 0.06, 0.1, 0.18, dark, 1.74, 2.5, 1.06);
+    cyl(p, 0.28, 0.28, 1.5, 24, steel, 0.4, 0.97, 0.95, 'x');
+    [-0.2, 1.0].forEach(function (x) { box(p, 0.06, 0.62, 0.06, dark, x, 0.97, 0.95); });
+    box(p, 0.9, 0.4, 0.42, dark, 0.5, 0.95, -0.95);
+    fenderArch(p, 2.6);
+  }
+
+  /* ---------- Cabina convencional con capó (tractocamiones y carro tanque) ---------- */
+  function cabConv(p, o) {
+    var F = o.hood || 1.25, W = -0.75, CB = W - 1.55;
+    // capó
+    var hs = new T.Shape();
+    hs.moveTo(W, 1.22); hs.lineTo(F, 1.22); hs.lineTo(F, 2.05);
+    hs.quadraticCurveTo(F, 2.3, F - 0.3, 2.32); hs.lineTo(W, 2.45); hs.closePath();
+    var hg = new T.ExtrudeGeometry(hs, { depth: 1.5, bevelEnabled: true, bevelThickness: 0.06, bevelSize: 0.05, bevelSegments: 3, curveSegments: 6 });
+    hg.translate(0, 0, -0.75);
+    add(p, hg, paint);
+    fenderArch(p, 0);
+    [-1, 1].forEach(function (s) {
+      box(p, F + 0.55, 0.1, 0.46, paint, (F - 0.6) / 2, 1.13, s * 1.0);           // guardabarros delantero
+      box(p, 0.12, 0.16, 0.34, lampW, F - 0.2, 1.27, s * 0.98);                   // farolas
+      box(p, 0.08, 0.08, 0.16, lampA, F - 0.24, 1.27, s * 1.2);
+    });
+    // parrilla y defensa
+    box(p, 0.06, 0.8, 1.2, chrome, F + 0.05, 1.66, 0);
+    for (var i = 0; i < 9; i++) box(p, 0.03, 0.7, 0.045, dark, F + 0.09, 1.66, -0.48 + i * 0.12);
+    box(p, 0.25, 0.32, 2.45, chrome, F + 0.2, 0.98, 0);
+    // cabina
+    var cs = new T.Shape();
+    cs.moveTo(CB, 1.2); cs.lineTo(W + 0.05, 1.2); cs.lineTo(W + 0.05, 2.45); cs.lineTo(W - 0.35, 3.2); cs.lineTo(CB, 3.2); cs.closePath();
+    var cg = new T.ExtrudeGeometry(cs, { depth: 2.1, bevelEnabled: true, bevelThickness: 0.06, bevelSize: 0.05, bevelSegments: 3, curveSegments: 1 });
+    cg.translate(0, 0, -1.05);
+    add(p, cg, paint);
+    // parabrisas
+    var wa = Math.atan2(0.4, 0.75), nx = 0.75 / 0.85, ny = 0.4 / 0.85;
+    box(p, 0.025, 0.84, 2.06, black, W - 0.15 + nx * 0.06, 2.825 + ny * 0.06, 0).rotation.z = wa;
+    box(p, 0.03, 0.74, 1.95, glass, W - 0.15 + nx * 0.075, 2.825 + ny * 0.075, 0).rotation.z = wa;
+    box(p, 0.32, 0.05, 2.1, dark, W - 0.42, 3.24, 0).rotation.z = -0.12;    // visera
+    [-0.45, 0, 0.45].forEach(function (z) { box(p, 0.1, 0.07, 0.2, lampA, W - 0.6, 3.29, z); });
+    [-1, 1].forEach(function (s) {
+      box(p, 0.96, 0.66, 0.02, black, W - 0.62, 2.72, s * 1.105);              // ventana lateral
+      box(p, 0.9, 0.6, 0.03, glassSide, W - 0.62, 2.72, s * 1.108);
+      box(p, 0.012, 1.7, 0.012, dark, CB + 0.35, 2.2, s * 1.105);              // líneas de puerta
+      box(p, 0.14, 0.04, 0.05, dark, CB + 0.55, 2.2, s * 1.13);                // manija
+      box(p, 0.05, 0.05, 0.3, dark, W + 0.02, 2.62, s * 1.2);                  // espejo
+      box(p, 0.09, 0.56, 0.16, black, W + 0.04, 2.5, s * 1.42);
+      box(p, 0.02, 0.5, 0.13, glassSide, W + 0.095, 2.5, s * 1.42);
+      cyl(p, 0.28, 0.28, 1.2, 24, chrome, -1.55, 0.95, s * 0.98, 'x');         // tanques de combustible
+      [-2.05, -1.05].forEach(function (x) { box(p, 0.05, 0.6, 0.62, dark, x, 0.95, s * 0.98); });
+      box(p, 0.26, 0.04, 0.3, steel, -0.72, 0.62, s * 1.0);                    // peldaño
+      if (o.aircleaners) {
+        cyl(p, 0.17, 0.17, 0.75, 20, chrome, W + 0.22, 2.05, s * 1.26, 'y');   // filtros de aire
+        box(p, 0.06, 0.06, 0.2, dark, W + 0.22, 2.05, s * 1.12);
+      }
+    });
+    var back = CB;
+    if (o.sleeper) {
+      box(p, 1.35, 2.35, 2.1, paint, CB - 0.67, 2.375, 0);                     // dormitorio
+      box(p, 0.85, 0.3, 2.0, paint, CB + 0.35, 3.32, 0).rotation.z = 0.28;     // deflector de techo
+      [-1, 1].forEach(function (s) { box(p, 0.5, 0.35, 0.02, glassSide, CB - 0.7, 2.75, s * 1.052); });
+      back = CB - 1.35;
+    }
+    [-1, 1].forEach(function (s) {
+      cyl(p, 0.08, 0.08, 2.7, 14, chrome, back - 0.14, 2.55, s * 0.98, 'y');   // exhostos
+      cyl(p, 0.105, 0.105, 0.9, 14, steel, back - 0.14, 1.95, s * 0.98, 'y');
+    });
+    return back;
+  }
+
+  /* ---------- Tractor 6x4 con quinta rueda ---------- */
+  function tractor(v, o) {
+    var back = cabConv(v, o);
+    var a1 = back - 0.95, a2 = a1 - 1.3, kx = (a1 + a2) / 2 + 0.25;
+    rails(v, a2 - 0.9, 1.1, 1.0);
+    axle(v, 0, false);
+    axle(v, a1, true, 0.5, true); axle(v, a2, true, 0.5, true);
+    box(v, 1.1, 0.1, 1.5, dark, kx, 1.2, 0);                              // quinta rueda
+    box(v, 0.95, 0.07, 1.3, black, kx, 1.29, 0);
+    box(v, 0.7, 0.04, 1.0, steel, back - 0.4, 1.2, 0);                    // pasarela
+    [-1, 1].forEach(function (s) {
+      box(v, 0.04, 0.55, 0.55, rubber, a2 - 0.62, 0.5, s * 1.0);
+      box(v, 0.06, 0.06, 0.55, dark, a2 - 0.62, 0.8, s * 1.0);
+      box(v, 0.04, 0.1, 0.16, lampR, a2 - 0.93, 1.0, s * 0.45);
+    });
+    return kx;
+  }
+
+  /* ---------- Semirremolque base (largueros, ejes, patas, trasera) ---------- */
+  function semitrailer(v, kx, len) {
+    var F = kx + 0.9, R = F - len;
+    [-1, 1].forEach(function (s) { box(v, len, 0.16, 0.14, black, (F + R) / 2, 1.42, s * 0.5); });
+    for (var x = F - 0.6; x > R + 0.3; x -= 1.2) box(v, 0.1, 0.12, 0.9, black, x, 1.42, 0);
+    box(v, 1.8, 0.05, 2.3, dark, F - 0.9, 1.365, 0);                       // placa del pin
+    box(v, 0.06, 0.24, 2.4, dark, F - 0.03, 1.47, 0);
+    [R + 1.3, R + 2.6, R + 3.9].forEach(function (ax) {
+      axle(v, ax, true, 0.5, false);
+      [-1, 1].forEach(function (s) { [-0.45, 0.45].forEach(function (d) { box(v, 0.1, 0.62, 0.1, dark, ax + d, 1.03, s * 0.5); }); });
+    });
+    [-1, 1].forEach(function (s) {                                          // patas de apoyo
+      box(v, 0.12, 1.0, 0.12, steel, F - 2.3, 0.84, s * 0.85);
+      box(v, 0.3, 0.05, 0.3, dark, F - 2.3, 0.32, s * 0.85);
+    });
+    box(v, 0.08, 0.08, 1.7, steel, F - 2.3, 0.9, 0);
+    rearEnd(v, R, R + 0.7, 0.35);
+    return { F: F, R: R };
+  }
+
+  /* ---------- Caja volcable con compuerta y cilindro telescópico ---------- */
+  function dumpBody(p, o) {
+    var xr = o.xr, xf = o.xf, y0 = o.y0, y1 = o.y1, s = o.slope, hw = o.hw || 1.19, h = y1 - y0;
+    var mat = o.mat || paint, lin = o.liner || liner;
+    var H = new T.Vector2(xr + 0.1, y0);
+    var pivot = new T.Group(); pivot.position.set(H.x, H.y, 0); p.add(pivot);
+    var bodyG = new T.Group(); bodyG.position.set(-H.x, -H.y, 0); pivot.add(bodyG);
+
+    var wallShape = new T.Shape();
+    wallShape.moveTo(xr, y0); wallShape.lineTo(xf, y0); wallShape.lineTo(xf + s, y1); wallShape.lineTo(xr, y1); wallShape.closePath();
+    var lean = Math.atan2(s, h);
+    [1, -1].forEach(function (sd) {
+      var wg = new T.ExtrudeGeometry(wallShape, { depth: 0.06, bevelEnabled: false });
+      wg.translate(0, 0, sd > 0 ? hw : -hw - 0.06);
+      add(bodyG, wg, mat);
+      var ln = add(bodyG, new T.ShapeGeometry(wallShape), lin, 0, 0, sd * (hw - 0.002)); ln.castShadow = false;
+      for (var xc = xf - 0.5; xc > xr + 0.3; xc -= 0.92) {                     // nervaduras exteriores
+        box(bodyG, 0.13, (h + 0.04) / Math.cos(lean), 0.04, mat, xc, (y0 + y1) / 2, sd * (hw + 0.08)).rotation.z = -lean;
+      }
+      box(bodyG, xf + s - xr, 0.09, 0.14, mat, (xf + s + xr) / 2, y1 + 0.01, sd * (hw + 0.01)); // borde superior
+    });
+    box(bodyG, xf - xr + 0.05, 0.1, 2 * hw, steel, (xf + xr) / 2, y0 + 0.05, 0);                 // piso
+    box(bodyG, 0.07, Math.sqrt(h * h + s * s) + 0.02, 2 * hw + 0.06, mat, xf + s / 2 - 0.04, (y0 + y1) / 2, 0).rotation.z = -lean;
+    box(bodyG, 0.24, 0.06, 2 * hw + 0.12, mat, xf + s + 0.04, y1 + 0.02, 0).rotation.z = -0.15;  // visera
+    [-1, 1].forEach(function (sd) { box(bodyG, xf - xr - 0.1, 0.11, 0.1, black, (xf + xr) / 2, y0 - 0.055, sd * 0.5); });
+    for (var q = xr + 0.5; q < xf; q += 0.9) box(bodyG, 0.12, 0.11, 2 * hw - 0.18, black, q, y0 - 0.055, 0);
+
+    var gate = new T.Group(); gate.position.set(xr, y1 - 0.03, 0); bodyG.add(gate);   // compuerta (bisagra superior)
+    box(gate, 0.07, h - 0.1, 2 * hw, mat, 0, -(h - 0.1) / 2, 0);
+    [-0.8, 0, 0.8].forEach(function (z) { box(gate, 0.04, h - 0.3, 0.12, mat, -0.05, -(h - 0.1) / 2, z); });
+    box(gate, 0.05, 0.1, 2 * hw + 0.02, mat, -0.03, -0.05, 0);
+    [-1, 1].forEach(function (sd) { cyl(gate, 0.04, 0.04, 0.2, 10, steel, -0.06, -(h - 0.2), sd * 1.0, 'z'); });
+
+    var base = o.base, topP = o.top;
+    var stages = [[0.1, black, 0.55], [0.075, chrome, 0.8], [0.055, chrome, 1.0]].map(function (st) {
+      var g = new T.CylinderGeometry(st[0], st[0], 1, 16); g.translate(0, 0.5, 0);
+      var m = new T.Mesh(g, st[1]); m.castShadow = true; p.add(m); return { mesh: m, f: st[2] };
+    });
+    var origin = new T.Vector2(0, 0);
+    function update(theta) {
+      var t = topP.clone().sub(H).rotateAround(origin, theta).add(H);
+      var d = t.clone().sub(base), L = Math.max(d.length(), 0.2), phi = Math.atan2(d.y, d.x);
+      stages.forEach(function (st) {
+        st.mesh.position.set(base.x, base.y, 0);
+        st.mesh.rotation.z = phi - PI / 2;
+        st.mesh.scale.y = L * st.f;
+      });
+    }
+    return { pivot: pivot, gate: gate, update: update, max: o.max || 0.7 };
+  }
+
+  /* ---------- Excavadora genérica para la cama baja ---------- */
+  function excavator(p, ox, oy) {
+    var g = new T.Group(); g.position.set(ox, oy, 0); p.add(g);
+    [-1, 1].forEach(function (s) {
+      box(g, 3.6, 0.62, 0.62, dark, 0, 0.36, s * 1.12);
+      [-1.8, 1.8].forEach(function (x) { cyl(g, 0.31, 0.31, 0.62, 20, dark, x, 0.36, s * 1.12, 'z'); });
+      for (var k = 0; k < 12; k++) box(g, 0.08, 0.05, 0.64, black, -1.65 + k * 0.3, 0.69, s * 1.12);
+    });
+    box(g, 2.2, 0.45, 1.6, dark, 0, 0.75, 0);
+    cyl(g, 0.7, 0.7, 0.14, 28, black, 0, 1.03, 0, 'y');
+    box(g, 3.0, 0.85, 2.5, yellow, 0.35, 1.53, 0);                            // superestructura
+    box(g, 0.55, 0.85, 2.5, yellow, 2.1, 1.5, 0);                             // contrapeso
+    box(g, 1.3, 0.18, 1.3, yellow, 1.05, 2.04, -0.5);
+    cyl(g, 0.05, 0.05, 0.4, 10, dark, 1.3, 2.3, -0.85, 'y');
+    box(g, 1.0, 1.45, 0.95, yellow, -0.62, 2.68, 0.72);                       // cabina
+    box(g, 0.03, 1.05, 0.82, glass, -1.13, 2.78, 0.72);
+    box(g, 0.8, 0.95, 0.03, glassSide, -0.6, 2.8, 1.205);
+    box(g, 0.8, 0.95, 0.03, glassSide, -0.6, 2.8, 0.235);
+    var bz = -0.25;                                                           // pluma, brazo y cucharón en posición de transporte
+    beam(g, -1.0, 2.0, -2.7, 3.1, 0.5, 0.5, bz, yellow, 0.2);
+    beam(g, -2.7, 3.1, -4.5, 2.8, 0.42, 0.48, bz, yellow, 0.2);
+    beam(g, -4.5, 2.8, -5.15, 1.1, 0.36, 0.4, bz, yellow, 0.1);
+    [-1, 1].forEach(function (s) {
+      beam(g, -0.8, 1.6, -1.6, 2.3, 0.2, 0.18, bz + s * 0.34, yellow);
+      beam(g, -0.8, 1.6, -2.3, 2.75, 0.1, 0.1, bz + s * 0.34, chrome);
+    });
+    beam(g, -2.4, 3.5, -3.3, 3.38, 0.22, 0.22, bz, yellow);
+    beam(g, -2.4, 3.5, -4.4, 3.2, 0.12, 0.12, bz, chrome);
+    box(g, 0.95, 0.8, 1.05, yellow, -5.3, 1.0, bz).rotation.z = 0.35;
+    for (var i = 0; i < 4; i++) box(g, 0.14, 0.08, 0.1, dark, -5.82, 0.66, bz - 0.4 + i * 0.27);
+    [-1, 1].forEach(function (s) {                                           // cadenas de amarre
+      beam(g, -2.1, 0.3, -2.9, 0.03, 0.035, 0.035, s * 1.05, black);
+      beam(g, 2.1, 0.3, 2.9, 0.03, 0.035, 0.035, s * 1.05, black);
+    });
+    return g;
+  }
+
+  /* ======================= VEHÍCULOS ======================= */
+  function buildDumpTruck(o) {
+    var v = new T.Group();
+    var last = o.rear[o.rear.length - 1];
+    rails(v, o.xr + 0.1, 3.6, 1.12);
+    rearEnd(v, o.xr, last - 0.6, 0);
+    axle(v, 2.6, false);
+    o.rear.forEach(function (ax) { axle(v, ax, true, 0.5, true); });
+    cabCOE(v);
+    if (o.guard) [-1, 1].forEach(function (s) {
+      box(v, 1.5, 0.05, 0.04, chrome, -0.9, 0.7, s * 1.2);
+      box(v, 0.04, 0.3, 0.04, steel, -1.5, 0.82, s * 1.2);
+      box(v, 0.04, 0.3, 0.04, steel, -0.3, 0.82, s * 1.2);
+    });
+    var lift = dumpBody(v, { xr: o.xr, xf: 1.0, y0: 1.35, y1: 3.45, slope: 0.5,
+      base: new T.Vector2(1.25, 1.08), top: new T.Vector2(0.9, 1.3), max: 0.70 });
+    return { group: v, lift: lift };
+  }
+
+  function buildTipper() {
+    var v = new T.Group();
+    var kx = tractor(v, { hood: 1.2 });
+    var t = semitrailer(v, kx, 11.6);
+    var s = 0.25, xf = t.F - 0.45 - s, y0 = 1.58, y1 = 3.5, h = y1 - y0;
+    var lift = dumpBody(v, { xr: t.R, xf: xf, y0: y0, y1: y1, slope: s, mat: tipBody, liner: tipLiner,
+      base: new T.Vector2(t.F - 0.2, 1.52), top: new T.Vector2(xf + s * 0.85 + 0.08, y0 + h * 0.85), max: 0.55 });
+    return { group: v, lift: lift };
+  }
+
+  function buildTanker() {
+    var v = new T.Group();
+    cabConv(v, { hood: 1.05 });
+    rails(v, -7.7, 1.1, 1.0);
+    axle(v, 0, false);
+    axle(v, -5.3, true, 0.5, true); axle(v, -6.6, true, 0.5, true);
+    rearEnd(v, -7.75, -7.2, 0);
+    var x0 = -2.6, x1 = -7.35, len = x0 - x1, cx = (x0 + x1) / 2, cy = 2.08, ry = 0.78, rz = 1.17;
+    var tg = new T.CylinderGeometry(1, 1, len, 40, 1, true); tg.rotateZ(PI / 2);
+    add(v, tg, inox, cx, cy, 0).scale.set(1, ry, rz);
+    [x0, x1].forEach(function (x, i) {                                      // cabezales abombados
+      add(v, new T.SphereGeometry(1, 32, 16), inox, x, cy, 0).scale.set(0.2, ry, rz);
+    });
+    for (var bx = x1 + 0.4; bx < x0; bx += 1.15) {                          // zunchos
+      var bg = new T.CylinderGeometry(1.015, 1.015, 0.07, 40, 1, true); bg.rotateZ(PI / 2);
+      add(v, bg, chrome, bx, cy, 0, true).scale.set(1, ry, rz);
+    }
+    [-3.0, -4.3, -5.9, -7.0].forEach(function (x) { box(v, 0.22, 0.24, 1.3, dark, x, 1.24, 0); });
+    box(v, len - 0.6, 0.04, 0.5, steel, cx, cy + ry + 0.03, 0);              // pasarela superior
+    [-0.3, 0.3].forEach(function (z) {
+      cyl(v, 0.02, 0.02, len - 0.8, 8, chrome, cx, cy + ry + 0.38, z, 'x');
+      for (var px = x1 + 0.6; px < x0 - 0.3; px += 1.2) box(v, 0.03, 0.36, 0.03, chrome, px, cy + ry + 0.2, z);
+    });
+    [-3.8, -6.1].forEach(function (x) {                                     // manholes
+      cyl(v, 0.26, 0.26, 0.12, 24, chrome, x, cy + ry + 0.1, 0, 'y');
+    });
+    [-0.28, 0.28].forEach(function (z) { box(v, 0.05, 1.9, 0.05, chrome, x1 - 0.32, 1.95, z); });   // escalera trasera
+    for (var ry2 = 1.2; ry2 < 2.9; ry2 += 0.3) box(v, 0.04, 0.04, 0.56, chrome, x1 - 0.32, ry2, 0);
+    cyl(v, 0.09, 0.09, 0.5, 14, dark, x1 - 0.2, 1.38, 0.4, 'x');            // válvula de descarga
+    cyl(v, 0.05, 0.05, 2.0, 12, chrome, -7.85, 0.78, 0, 'z');               // flauta de riego
+    for (var n = -0.8; n <= 0.8; n += 0.4) cyl(v, 0.03, 0.03, 0.08, 8, dark, -7.89, 0.73, n, 'y');
+    [-1, 1].forEach(function (s) {
+      cyl(v, 0.1, 0.1, 1.9, 14, dark, -3.65, 1.12, s * 1.12, 'x');          // portamangueras
+      box(v, 0.7, 0.5, 0.35, steel, -4.45, 1.0, s * 1.0);                  // caja de herramientas
+    });
+    return { group: v };
+  }
+
+  function buildLowboy() {
+    var v = new T.Group();
+    var kx = tractor(v, { sleeper: true, hood: 1.35 });
+    var F = kx + 0.9;
+    var P = [[F, 1.48], [F - 2.6, 1.48], [F - 3.15, 0.73], [F - 9.8, 0.73], [F - 10.4, 1.08], [F - 13.8, 1.08]];
+    for (var i = 0; i < P.length - 1; i++) {
+      var a = P[i], b = P[i + 1];
+      [-0.55, 0.55].forEach(function (z) { beam(v, a[0], a[1], b[0], b[1], 0.26, 0.14, z, black, 0.12); });
+      [-1.27, 1.27].forEach(function (z) { beam(v, a[0], a[1] + 0.02, b[0], b[1] + 0.02, 0.22, 0.08, z, dark, 0.1); });
+    }
+    box(v, 2.6, 0.05, 2.5, dark, F - 1.3, 1.635, 0);                        // cuello
+    beam(v, F - 2.6, 1.635, F - 3.15, 0.885, 0.05, 2.5, 0, dark);
+    box(v, 6.65, 0.05, 2.5, wood, F - 6.475, 0.885, 0);                     // piso bajo
+    beam(v, F - 9.8, 0.885, F - 10.4, 1.235, 0.05, 2.5, 0, wood);
+    box(v, 3.4, 0.05, 2.5, wood, F - 12.1, 1.235, 0);
+    for (var cx = F - 3.6; cx > F - 9.6; cx -= 0.9) box(v, 0.1, 0.16, 2.4, black, cx, 0.78, 0);
+    box(v, 1.8, 0.05, 2.0, dark, F - 0.9, 1.33, 0);
+    [F - 11.2, F - 12.15, F - 13.1].forEach(function (ax) {
+      axle(v, ax, true, 0.42, false);
+      [-1, 1].forEach(function (s) { box(v, 0.1, 0.4, 0.1, dark, ax, 0.76, s * 0.55); });
+    });
+    [-1, 1].forEach(function (s) {
+      box(v, 0.12, 1.0, 0.12, steel, F - 2.1, 0.84, s * 0.85);
+      box(v, 0.3, 0.05, 0.3, dark, F - 2.1, 0.32, s * 0.85);
+    });
+    rearEnd(v, F - 13.8, F - 13.65, 0.05);
+    sign(v, 'CARGA EXTRADIMENSIONADA', 2.0, 0.34, F - 13.87, 1.62, 0, -PI / 2);
+    sign(v, 'CARGA EXTRADIMENSIONADA', 1.7, 0.29, 1.35 + 0.34, 0.98, 0, PI / 2);
+    var exc = excavator(v, F - 5.35, 0.91);
+    return { group: v, cargo: { a: 'Con excavadora', b: 'Vacía', set: function (on) { exc.visible = on; } } };
+  }
+
+  function buildFlatbed() {
+    var v = new T.Group();
+    var kx = tractor(v, { sleeper: true, hood: 1.5, aircleaners: true });
+    var len = 12.2, t = semitrailer(v, kx, len), F = t.F, R = t.R, cx = (F + R) / 2;
+    box(v, len, 0.08, 2.5, wood, cx, 1.54, 0);                               // plataforma
+    [-1, 1].forEach(function (s) {
+      box(v, len, 0.16, 0.06, dark, cx, 1.47, s * 1.25);
+      for (var x = F - 0.4; x > R + 0.3; x -= 3.0) box(v, 0.08, 0.05, 0.03, lampA, x, 1.47, s * 1.285);
+    });
+    // carpa
+    var tarp = new T.Group(); v.add(tarp);
+    var w = 1.27, th = 2.05, r = 0.35, sh = new T.Shape();
+    sh.moveTo(-w, 0); sh.lineTo(w, 0); sh.lineTo(w, th - r); sh.quadraticCurveTo(w, th, w - r, th);
+    sh.lineTo(-w + r, th); sh.quadraticCurveTo(-w, th, -w, th - r); sh.closePath();
+    var tg = new T.ExtrudeGeometry(sh, { depth: len - 0.1, bevelEnabled: false, curveSegments: 8 });
+    tg.rotateY(PI / 2); tg.translate(R + 0.05, 1.58, 0);
+    add(tarp, tg, tarpMat);
+    [-1, 1].forEach(function (s) {
+      for (var x = R + 0.6; x < F - 0.2; x += 1.1) box(tarp, 0.05, 1.7, 0.02, strapMat, x, 2.45, s * 1.278);
+    });
+    // big bags con estacas
+    var open = new T.Group(); open.visible = false; v.add(open);
+    [-1, 1].forEach(function (s) {
+      for (var x = F - 0.1; x > R; x -= 1.22) box(open, 0.07, 1.45, 0.07, dark, x, 2.3, s * 1.21);
+    });
+    var nAlong = Math.floor((len - 0.3) / 1.1), count = nAlong * 2 * 2;
+    var bags = new T.InstancedMesh(new T.BoxGeometry(1.02, 0.95, 1.08), bagMat, count);
+    var bands = new T.InstancedMesh(new T.BoxGeometry(1.04, 0.24, 1.1), bandMat, count);
+    var m4 = new T.Matrix4(), k = 0;
+    for (var i = 0; i < nAlong; i++) [-0.58, 0.58].forEach(function (z) {
+      [0, 1].forEach(function (lv) {
+        m4.makeTranslation(R + 0.75 + i * 1.1, 1.58 + 0.475 + lv * 0.96, z);
+        bags.setMatrixAt(k, m4); bands.setMatrixAt(k, m4); k++;
+      });
+    });
+    [bags, bands].forEach(function (m) { m.castShadow = true; m.receiveShadow = true; open.add(m); });
+    return { group: v, cargo: { a: 'Carpada', b: 'Big bags', set: function (on) { tarp.visible = on; open.visible = !on; } } };
+  }
+
+  var FLEET = [
+    { id: 'doble-troque', name: 'Volqueta doble troque', service: 'Transporte de materiales agregados y mezcla asfáltica.',
+      conf: 'C3', axles: 3, cap: '14 m³', paint: '#f1f2f0',
+      build: function () { return buildDumpTruck({ rear: [-2.2, -3.3], xr: -4.1, guard: true }); } },
+    { id: 'sencilla', name: 'Volqueta sencilla', service: 'Transporte de materiales agregados y mezcla asfáltica.',
+      conf: 'C2', axles: 2, cap: '7 m³', paint: '#f2b705',
+      build: function () { return buildDumpTruck({ rear: [-1.5], xr: -2.6 }); } },
+    { id: 'tracto-volco', name: 'Tracto camión tipo volco', service: 'Transporte de materiales agregados en gran volumen.',
+      conf: '3S3', axles: 6, cap: '30 m³', paint: '#c0392b', build: buildTipper },
+    { id: 'carro-tanque', name: 'Carro tanque', service: 'Transporte de agua para construcción, sector agropecuario e industria petrolera.',
+      conf: 'C3', axles: 3, cap: '3.000 gal', paint: '#1f5fa8', build: buildTanker },
+    { id: 'cama-baja', name: 'Tractomula cama baja', service: 'Transporte de maquinaria pesada y maquinaria amarilla.',
+      conf: '3S3', axles: 6, cap: '35 t', paint: '#f1f2f0', build: buildLowboy },
+    { id: 'tractocamion', name: 'Tractocamión', service: 'Transporte de fertilizantes y carga general.',
+      conf: '3S3', axles: 6, cap: '34 t', paint: '#2f8a4b', build: buildFlatbed }
+  ];
+
+  /* ---------- Controles de cámara ---------- */
+  var controls = new T.OrbitControls(camera, canvas);
+  controls.target.set(0, 1.8, 0);
+  controls.enableDamping = true; controls.dampingFactor = 0.08;
+  controls.enablePan = false;
+  controls.maxPolarAngle = PI / 2 - 0.02;
+  controls.autoRotateSpeed = 1.2;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  controls.autoRotate = !reduce;
+  var spinBtn = document.getElementById('spin');
+  function syncSpin() { spinBtn.setAttribute('aria-pressed', controls.autoRotate ? 'true' : 'false'); }
+  syncSpin();
+  var tween = null;
+  controls.addEventListener('start', function () { controls.autoRotate = false; tween = null; syncSpin(); });
+  spinBtn.addEventListener('click', function () { controls.autoRotate = !controls.autoRotate; syncSpin(); });
+
+  function viewVec(name) {
+    var L = cur ? cur.size.x : 8.2;
+    switch (name) {
+      case 'front': return new T.Vector3(1, 0.07, 0).multiplyScalar(L / 2 + 9);
+      case 'rear': return new T.Vector3(-1, 0.1, 0).multiplyScalar(L / 2 + 9);
+      case 'side': return new T.Vector3(0.0001, 0.05, 1).multiplyScalar(L * 1.3 + 2);
+      case 'top': return new T.Vector3(0.0001, 1, 0.0001).multiplyScalar(L * 1.6 + 1);
+      default: return new T.Vector3(9.5, 2.8, 10).normalize().multiplyScalar(L * 1.55 + 1.5);
+    }
+  }
+  function goView(name, keepSpin) {
+    var from = new T.Spherical().setFromVector3(camera.position.clone().sub(controls.target));
+    var to = new T.Spherical().setFromVector3(viewVec(name));
+    var d = to.theta - from.theta;
+    while (d > PI) d -= 2 * PI;
+    while (d < -PI) d += 2 * PI;
+    tween = { t: 0, from: from, to: to, d: d };
+    if (!keepSpin) { controls.autoRotate = false; syncSpin(); }
+  }
+  document.getElementById('views').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-view]'); if (b) goView(b.getAttribute('data-view'));
+  });
+
+  /* ---------- Pintura ---------- */
+  var PAINTS = [['Blanco', '#f1f2f0'], ['Amarillo', '#f2b705'], ['Naranja', '#e8590c'], ['Rojo', '#c0392b'], ['Azul', '#1f5fa8'], ['Verde', '#2f8a4b'], ['Morado', '#6f4fb8'], ['Gris', '#7a828a']];
+  var paintsEl = document.getElementById('paints');
+  function syncSwatches(hex) {
+    Array.prototype.forEach.call(paintsEl.children, function (c) { c.setAttribute('aria-pressed', c.dataset.hex === hex ? 'true' : 'false'); });
+  }
+  PAINTS.forEach(function (p) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'swatch'; b.style.background = p[1]; b.dataset.hex = p[1];
+    b.setAttribute('aria-label', 'Pintura ' + p[0].toLowerCase()); b.title = p[0];
+    b.addEventListener('click', function () { setPaint(p[1]); syncSwatches(p[1]); });
+    paintsEl.appendChild(b);
+  });
+
+  /* ---------- Volco ---------- */
+  var liftGroup = document.getElementById('liftGroup');
+  var lift = document.getElementById('lift'), liftOut = document.getElementById('liftOut'), liftBtn = document.getElementById('liftBtn');
+  var liftTarget = 0, liftCur = 0;
+  function syncLift() {
+    var maxDeg = cur && cur.lift ? cur.lift.max * 180 / PI : 40;
+    liftOut.textContent = Math.round(liftTarget * maxDeg) + '°';
+    liftBtn.textContent = liftTarget > 0.5 ? 'Bajar' : 'Volcar';
+    liftBtn.classList.toggle('on', liftTarget > 0.5);
+  }
+  lift.addEventListener('input', function () { liftTarget = lift.value / 100; syncLift(); });
+  liftBtn.addEventListener('click', function () {
+    liftTarget = liftTarget > 0.5 ? 0 : 1; lift.value = liftTarget * 100; syncLift();
+  });
+  function applyLift() {
+    if (!cur || !cur.lift) return;
+    var th = liftCur * cur.lift.max;
+    cur.lift.pivot.rotation.z = th;
+    cur.lift.gate.rotation.z = -liftCur * 0.75;
+    cur.lift.update(th);
+  }
+
+  /* ---------- Carga ---------- */
+  var cargoGroup = document.getElementById('cargoGroup');
+  var cargoA = document.getElementById('cargoA'), cargoB = document.getElementById('cargoB');
+  function setCargo(on) {
+    if (!cur || !cur.cargo) return;
+    cur.cargo.set(on);
+    cargoA.setAttribute('aria-pressed', on ? 'true' : 'false');
+    cargoB.setAttribute('aria-pressed', on ? 'false' : 'true');
+  }
+  cargoA.addEventListener('click', function () { setCargo(true); });
+  cargoB.addEventListener('click', function () { setCargo(false); });
+
+  /* ---------- Selector de flota ---------- */
+  var fleetEl = document.getElementById('fleet');
+  FLEET.forEach(function (f) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.textContent = f.name; b.dataset.id = f.id;
+    b.addEventListener('click', function () { selectVehicle(f.id); });
+    fleetEl.appendChild(b);
+  });
+
+  function fmt(m) { return m.toFixed(1).replace('.', ',') + ' m'; }
+  function disposeTree(o) {
+    o.traverse(function (n) {
+      if (n.geometry && !KEEP.has(n.geometry)) n.geometry.dispose();
+      if (n.material && n.userData.ownMat) { if (n.material.map) n.material.map.dispose(); n.material.dispose(); }
+    });
+  }
+
+  var cur = null, drive = null;
+  function selectVehicle(id, first) {
+    var def = FLEET.filter(function (f) { return f.id === id; })[0] || FLEET[0];
+    if (cur && cur.def === def) return;
+    if (cur) { scene.remove(cur.outer); disposeTree(cur.outer); }
+
+    buildWheels = [];
+    var built = def.build();
+    var outer = new T.Group(), inner = built.group;
+    outer.add(inner); scene.add(outer);
+    var bb = new T.Box3().setFromObject(inner), c = bb.getCenter(new T.Vector3()), size = bb.getSize(new T.Vector3());
+    inner.position.x = -c.x; inner.position.z = -c.z;
+    cur = { def: def, outer: outer, lift: built.lift || null, cargo: built.cargo || null, wheels: buildWheels, size: size };
+
+    setPaint(def.paint); syncSwatches(def.paint);
+    liftTarget = liftCur = 0; lift.value = 0; applyLift(); syncLift();
+    liftGroup.hidden = !cur.lift;
+    cargoGroup.hidden = !cur.cargo;
+    if (cur.cargo) { cargoA.textContent = cur.cargo.a; cargoB.textContent = cur.cargo.b; setCargo(true); }
+
+    document.getElementById('vName').textContent = def.name;
+    document.getElementById('vService').textContent = def.service;
+    document.getElementById('sConf').textContent = def.conf;
+    document.getElementById('sAxles').textContent = def.axles;
+    document.getElementById('sLen').textContent = fmt(size.x);
+    document.getElementById('sWid').textContent = fmt(Math.min(size.z, 2.6));
+    document.getElementById('sHei').textContent = fmt(size.y);
+    document.getElementById('sCap').textContent = def.cap;
+    document.title = def.name + ' · Flota Incondor 3D';
+    Array.prototype.forEach.call(fleetEl.children, function (b) { b.setAttribute('aria-pressed', b.dataset.id === def.id ? 'true' : 'false'); });
+    try { history.replaceState(null, '', '#' + def.id); } catch (e) {}
+
+    blob.scale.set(size.x + 3.3, size.z + 1.9, 1);
+    var L = size.x;
+    controls.target.set(0, size.y * 0.48, 0);
+    controls.minDistance = L * 0.45 + 3;
+    controls.maxDistance = L * 2.6 + 6;
+    if (first) camera.position.copy(viewVec('iso')).add(controls.target);
+    else goView('iso', true);
+
+    drive = null;
+    if (!reduce && !first) { drive = { t: 0, from: -Math.min(6, L * 0.4), last: 0 }; outer.position.x = drive.from; }
+    blob.position.x = outer.position.x;
+  }
+
+  /* ---------- Tamaño y bucle ---------- */
+  function resize() {
+    var r = stage.getBoundingClientRect();
+    var w = Math.max(1, r.width), h = Math.max(1, r.height), a = w / h;
+    renderer.setSize(w, h, false);
+    camera.aspect = a;
+    var base = Math.tan(T.MathUtils.degToRad(16)) * 1.5;
+    camera.fov = a >= 1.5 ? 32 : T.MathUtils.radToDeg(2 * Math.atan(Math.min(base / a, 1.6)));
+    camera.updateProjectionMatrix();
+  }
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(stage); else window.addEventListener('resize', resize);
+  resize();
+
+  var initial = (location.hash || '').replace('#', '');
+  selectVehicle(initial, true);
+  window.addEventListener('hashchange', function () { selectVehicle((location.hash || '').replace('#', '')); });
+
+  var last = performance.now();
+  function frame(now) {
+    var dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (drive) {                                                      // entrada rodando
+      drive.t = Math.min(1, drive.t + dt / 0.9);
+      var e1 = 1 - Math.pow(1 - drive.t, 3), x = drive.from * (1 - e1), dx = x - cur.outer.position.x;
+      cur.outer.position.x = x; blob.position.x = x;
+      cur.wheels.forEach(function (w) { w.rotation.z -= dx / w.userData.r; });
+      if (drive.t >= 1) drive = null;
+    }
+    if (Math.abs(liftTarget - liftCur) > 0.0005) {
+      liftCur += (liftTarget - liftCur) * Math.min(1, dt * 3.2);
+      applyLift();
+    }
+    if (tween) {
+      tween.t = Math.min(1, tween.t + dt / 0.9);
+      var e = tween.t < 0.5 ? 2 * tween.t * tween.t : 1 - Math.pow(-2 * tween.t + 2, 2) / 2;
+      var s = new T.Spherical(
+        tween.from.radius + (tween.to.radius - tween.from.radius) * e,
+        tween.from.phi + (tween.to.phi - tween.from.phi) * e,
+        tween.from.theta + tween.d * e);
+      camera.position.setFromSpherical(s).add(controls.target);
+      if (tween.t >= 1) tween = null;
+    }
+    controls.update();
+    renderer.render(scene, camera);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body></html>

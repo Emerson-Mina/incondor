@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logo Incondor v3</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg0:#090c0f; --bg1:#0f1418; --bg2:#131a20; --fg:#e8edf1; --muted:#8b99a5; --cu:#d98d2f; --line:#222c35; --paper:#f4f4f2; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg0); color: var(--fg); font: 16px/1.55 Inter, system-ui, sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding: 48px 16px 80px; }
+  h1, h2, h3 { font-family: "Barlow Condensed", sans-serif; font-style: italic; font-weight: 800; text-transform: uppercase; margin: 0; line-height: .95; }
+  h1 { font-size: clamp(44px, 7vw, 84px); } h2 { font-size: clamp(30px, 4vw, 46px); margin: 60px 0 8px; }
+  .k { font: 600 12px/1 ui-monospace, monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--cu); }
+  .lead, .muted { color: var(--muted); } .lead { max-width: 760px; font-size: 18px; }
+  .row { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-top: 18px; }
+  .card { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--bg1); }
+  .stage { display: grid; place-items: center; padding: 28px; min-height: 220px; }
+  .light { background: var(--paper); } .dark { background: var(--bg2); }
+  .stage img { max-width: 100%; max-height: 200px; }
+  .cap { padding: 12px 16px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  .cap b { color: var(--fg); }
+  .hero { position: relative; border-radius: 12px; overflow: hidden; margin-top: 18px; min-height: 340px; background: #111 center/cover; }
+  .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,12,15,.85), rgba(9,12,15,.2) 45%, rgba(9,12,15,.85)); }
+  .hero nav { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; gap: 16px; }
+  .hero nav img { height: 64px; max-width: 65%; }
+  .hero nav span { font: 600 13px/1 Inter; letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
+  .hero h3 { position: absolute; z-index: 1; left: 24px; bottom: 24px; font-size: clamp(34px, 5vw, 60px); max-width: 640px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="k">Incondor S.A.S · propuesta v3</div>
+  <h1>Una volqueta<br>cargada</h1>
+  <p class="lead">Incondor transporta material de cantera, mezcla asfáltica, agua y maquinaria en volquetas doble troque. Por eso la volqueta cargada es el centro del logo. Se mantienen el cobre, el negro y el IC de la marca, que va pintado en el volco como en la flota real.</p>
+
+  <h2>A · Volqueta IC</h2>
+  <p class="muted">La volqueta con el IC en el volco y el nombre al lado.</p>
+  <div class="row">
+    <div class="card"><div class="stage light"><img src="a-volqueta-ic/horizontal-claro.svg" alt=""></div><div class="cap"><b>Horizontal</b> · documentos, firma de correo</div></div>
+    <div class="card"><div class="stage dark"><img src="a-volqueta-ic/vertical-oscuro.svg" alt=""></div><div class="cap"><b>Vertical</b> · redes sociales, portadas</div></div>
+  </div>
+
+  <h2>B · Placa de flota</h2>
+  <p class="muted">La volqueta en blanco sobre una placa cobre. Sirve como foto de perfil, ícono de la app y adhesivo para las puertas.</p>
+  <div class="row">
+    <div class="card"><div class="stage light"><img src="b-placa-flota/icono.svg" alt=""></div><div class="cap"><b>Ícono</b> · WhatsApp e Instagram</div></div>
+    <div class="card"><div class="stage dark"><img src="b-placa-flota/horizontal-oscuro.svg" alt=""></div><div class="cap"><b>Horizontal</b></div></div>
+  </div>
+
+  <h2>C · Ruta</h2>
+  <p class="muted">El nombre en grande y la volqueta rodando sobre una vía cobre. Es la versión más llamativa para encabezados y vallas.</p>
+  <div class="row">
+    <div class="card"><div class="stage light"><img src="c-ruta/horizontal-claro.svg" alt=""></div><div class="cap"><b>Fondo claro</b></div></div>
+    <div class="card"><div class="stage dark"><img src="c-ruta/horizontal-oscuro.svg" alt=""></div><div class="cap"><b>Fondo oscuro</b></div></div>
+  </div>
+
+  <h2>Así se ve en la web</h2>
+  <div class="hero" style="background-image:url('../../public/img/hero-volqueta.webp')">
+    <nav><img src="c-ruta/horizontal-oscuro.svg" alt="Incondor"><span>Servicios · Flota · Contacto</span></nav>
+    <h3>La solución al transporte de manera concreta</h3>
+  </div>
+</main>
+</body>
+</html>

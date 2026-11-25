@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="t">
+<title id="t">Incondor</title>
+<g id="icon"><defs><clipPath id="ci0"><circle cx="256" cy="256" r="236"/></clipPath></defs>
+<circle cx="256" cy="256" r="236" fill="#ff7a2f"/>
+<g clip-path="url(#ci0)"><g transform="translate(-66 -34)"><path d="M112 540C132 474 164 448 196 444H356C394 456 414 492 424 540Z" fill="#11161b"/><path d="M210 540C222 440 226 380 236 330C244 270 262 232 296 222Q312 196 332 206Q348 194 358 214C368 220 376 226 383 233L381 271C368 277 350 282 336 290C318 310 312 350 316 390C320 440 326 490 332 540Z" fill="#11161b"/>
+<path d="M194 404q13-24 27 0q13-24 27 0q13-24 27 0q13-24 27 0q13-24 27 0q13-24 27 0q10-18 20 0L366 446C300 432 250 434 190 452Z" fill="#e8edf1"/><path d="M383 232L410 236C444 240 462 262 452 298C446 283 436 274 420 272L381 271Z" fill="#e8edf1"/>
+<circle cx="342" cy="238" r="10" fill="#ff7a2f"/></g></g></g>
+</svg>

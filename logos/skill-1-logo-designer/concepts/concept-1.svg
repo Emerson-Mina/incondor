@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="t">
+<title id="t">Incondor — concepto 1, cóndor frontal</title>
+<g id="icon">
+<g fill="#11161b"><polygon points="242,236 104,196 104,264 242,300"/>
+<polygon points="104,196 44,168 44,188 104,216"/>
+<polygon points="104,222 52,200 52,220 104,242"/>
+<polygon points="104,248 64,232 64,252 104,264"/>
+<g transform="translate(512 0) scale(-1 1)"><polygon points="242,236 104,196 104,264 242,300"/>
+<polygon points="104,196 44,168 44,188 104,216"/>
+<polygon points="104,222 52,200 52,220 104,242"/>
+<polygon points="104,248 64,232 64,252 104,264"/></g>
+<path d="M236 232h40l10 76-30 44-30-44z"/></g>
+<ellipse cx="256" cy="236" rx="34" ry="12" fill="#e8edf1"/>
+<circle cx="256" cy="200" r="26" fill="#ff7a2f"/>
+<path d="M248 214l8 18 8-18z" fill="#e8edf1"/>
+</g>
+</svg>

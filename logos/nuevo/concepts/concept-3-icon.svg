@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="t">
+<title id="t">Incondor — ícono 3</title>
+<g id="icon">
+<defs><mask id="m3" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512"><rect width="512" height="512" fill="#fff"/>
+<circle cx="140" cy="340" r="32" fill="#000"/><circle cx="206" cy="340" r="32" fill="#000"/><circle cx="398" cy="340" r="32" fill="#000"/>
+<path d="M352 216H398L418 252H352Z" fill="#000"/></mask></defs>
+<g mask="url(#m3)">
+<path d="M70 300H456V322H70Z" fill="#1d252c"/>
+<path d="M340 300V206Q340 194 352 194H404L428 246L456 252Q466 256 466 268V300Z" fill="#1d252c"/>
+<path d="M344 194V160H354V194Z" fill="#1d252c"/>
+</g>
+<path d="M184 176L60 112M166 204L46 162M150 232L44 212" stroke="#f2a20c" stroke-width="26" stroke-linecap="round"/>
+<path d="M330 292H112L96 250L150 232L166 204L184 176L210 166H330Z" fill="#f2a20c"/>
+<path d="M200 196H320M178 228H320M160 260H320" stroke="#1d252c" stroke-width="7" opacity=".3"/>
+<g fill="#1d252c"><circle cx="140" cy="340" r="26"/><circle cx="206" cy="340" r="26"/><circle cx="398" cy="340" r="26"/></g>
+<g fill="#f1ede4"><circle cx="140" cy="340" r="9"/><circle cx="206" cy="340" r="9"/><circle cx="398" cy="340" r="9"/></g>
+<path d="M30 378H482L470 408H18Z" fill="#1d252c"/>
+<path d="M50 393H460" stroke="#f2a20c" stroke-width="6" stroke-dasharray="36 22"/>
+</g>
+</svg>
